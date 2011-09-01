@@ -1,0 +1,14 @@
+PATH
+  remote: .
+  specs:
+    skypekit_pure (0.0.1)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  skypekit_pure!
