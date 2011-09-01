@@ -54,16 +54,19 @@ module SkypekitPure
       req = sprintf("%08x", SKYPEKIT_SECRET.length) + SKYPEKIT_SECRET                                                                                                                                                                 
       socket.write(req)
       data = nil
-      
-      timeout(5) do
-        begin
-          data = socket.respond_to?('read_nonblock') ? socket.read_nonblock(2) : socket.sysread(2)
-        rescue Exception => e 
-          sleep 0.1
-          retry
+     
+      begin
+        timeout(5) do
+          begin
+            data = socket.respond_to?('read_nonblock') ? socket.read_nonblock(2) : socket.sysread(2)
+          rescue Exception => e 
+            sleep 0.1
+            retry
+          end
         end
-      end
-      
+      rescue Timeout::Error
+        raise ConnectionClosed, "error with accept connection"
+      end 
       raise ConnectionClosed, "error with handshake" if 'OK' != data
     end
     
