@@ -70,5 +70,9 @@ module SkypekitPure
       raise ConnectionClosed, "error with handshake" if 'OK' != data
     end
     
+    def disconnect
+      socket.close
+    end
+    
   end
 end
