@@ -8,6 +8,13 @@ module SkypekitPure
     def disconnect
       @api.disconnect
     end
+    
+    def get_account
+      #l_request = skypekit.XCallRequest("ZR\000s", 0, 115)
+      #l_request.add_parm('S', 1, identity)
+      #l_response = self.transport.xcall(l_request)
+      #l_result = module_id2classes[5](l_response.get(1), self.transport)
+    end
       
   end
 end

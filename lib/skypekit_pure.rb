@@ -1,5 +1,6 @@
 require 'skypekit_pure/errors'
 require 'skypekit_pure/api'
+require 'skypekit_pure/request'
 require 'skypekit_pure/skype'
 require 'skypekit_pure/version'
 

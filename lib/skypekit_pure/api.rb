@@ -53,21 +53,29 @@ module SkypekitPure
     def handshake
       req = sprintf("%08x", SKYPEKIT_SECRET.length) + SKYPEKIT_SECRET                                                                                                                                                                 
       socket.write(req)
-      data = nil
-     
-      begin
-        timeout(5) do
-          begin
-            data = socket.respond_to?('read_nonblock') ? socket.read_nonblock(2) : socket.sysread(2)
-          rescue Exception => e 
-            sleep 0.1
-            retry
-          end
-        end
-      rescue Timeout::Error
-        raise ConnectionClosed, "error with accept connection"
-      end 
+      data = self.read_bytes(2) 
       raise ConnectionClosed, "error with handshake" if 'OK' != data
+    end
+    
+    def read_bytes(num_bytes = 1)
+      data = ""
+      while data.length < num_bytes
+        begin
+          timeout(3) do
+            begin
+              data += socket.respond_to?('read_nonblock') ? socket.read_nonblock(4096) : socket.sysread(4096)
+            rescue OpenSSL::SSL::SSLError => e 
+              sleep 0.1
+              retry
+            rescue
+              raise ConnectionClosed, "error read data"
+            end
+          end
+        rescue Timeout::Error
+          raise ConnectionClosed, "error with accept connection"
+        end
+      end
+      data[0..num_bytes-1]
     end
     
     def disconnect
