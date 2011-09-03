@@ -4,29 +4,37 @@ module SkypekitPure
     def initialyze
       @tokens = ['B']
       @encoders = {}
+      @encoders['i'] = encode_varint
+      @encoders['u'] = encode_varuint
+      @encoders['e'] = encode_varuint
+      @encoders['o'] = encode_varuint
+      @encoders['O'] = encode_objectid
+      @encoders['S'] = encode_string
+      @encoders['X'] = encode_string
+      @encoders['f'] = encode_string
+      @encoders['B'] = encode_string
     end
     
     def add_parm(kind, tag, val)
-      token = self.tokens
       if val.is_a?(Hash)
-        token << ord_method('[')
+        @tokens << ord_method('[')
         self.encode_varuint(tag)
         encoder = @encoders[kind]
         val.each do |elem|
           if kind != 'b'
-            token << ord_method(kind)
+            @tokens << ord_method(kind)
             #encoder(self, elem)
           else
             if elem
-              token << ord_method('T')
+              @tokens << ord_method('T')
             else
-              token << ord_method('F')
+              @tokens << ord_method('F')
             end
           end
         end
-        token << ord_method(']')
+        @tokens << ord_method(']')
       elsif kind != 'b'
-        token << ord_method(kind)
+        @tokens << ord_method(kind)
         if tag == 0
           @oid = val.object_id
         end
@@ -34,9 +42,9 @@ module SkypekitPure
         #@encoders[kind](self, val)
       else
         if val
-          token << ord_method('T')
+          @tokens << ord_method('T')
         else
-          token << ord_method('F')
+          @tokens << ord_method('F')
         end
         self.encode_varuint(tag)
       end
@@ -47,12 +55,39 @@ module SkypekitPure
     
     def encode_varint(number)
       if number >= 0
-        number *= 2
+        number = number << 1
       else
-        number = -2 * number - 1
+        number = (number << 1) ^ (~0)
       end
       self.encode_varuint(number)
-      @encoders['i'] = encode_varint
+    end
+    
+    def encode_varuint(number)
+      while 1 do
+        towrite = number & 0x7f
+        number = number >> 7
+        if number == 0
+          @tokens << towrite
+          break
+        end
+        @tokens << (0x80|towrite)
+      end
+    end
+    
+    def encode_objectid(val)
+      unless val
+        self.encode_varuint(0)
+      else
+        self.encode_varuint(val.object_id)
+      end
+    end
+    
+    def encode_objectid(val)
+      length = val.length
+      self.encode_varuint(length)
+      if length > 0
+        @tokens += split("").map{|a| ord_method(a) }
+      end
     end
     
     def ord_method(str)
@@ -60,4 +95,4 @@ module SkypekitPure
     end
     
   end
-end
+end 

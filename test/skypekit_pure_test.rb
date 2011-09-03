@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'skypekit_pure'
 
 class SkypekitPureTest < ActiveSupport::TestCase
   test "the truth" do
